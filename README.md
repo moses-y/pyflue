@@ -1,7 +1,17 @@
 # PyFlue
 
 [![CI](https://github.com/SuperagenticAI/pyflue/actions/workflows/ci.yml/badge.svg)](https://github.com/SuperagenticAI/pyflue/actions/workflows/ci.yml)
-[![Docs](https://github.com/SuperagenticAI/pyflue/actions/workflows/docs.yml/badge.svg)](https://github.com/SuperagenticAI/pyflue/actions/workflows/docs.yml)
+[![Docs](https://github.com/SuperagenticAI/pyflue/actions/workflows/docs.yml/badge.svg)](https://pyflue.ai)
+[![PyPI](https://img.shields.io/pypi/v/pyflue)](https://pypi.org/project/pyflue/)
+[![Python](https://img.shields.io/pypi/pyversions/pyflue)](https://pypi.org/project/pyflue/)
+[![License](https://img.shields.io/pypi/l/pyflue)](https://github.com/SuperagenticAI/pyflue/blob/main/LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/variant-flat.svg)](https://github.com/astral-sh/ruff)
+[![Downloads](https://img.shields.io/pypi/dm/pyflue)](https://pypi.org/project/pyflue/)
+
+> **Warning: Active Development**
+>
+> PyFlue is under active development. The API may change. Pin your dependencies
+> and review changelogs before updating.
 
 PyFlue is the agent harness framework for Python. It gives you Markdown skills,
 stateful sessions, sandboxed filesystem and shell access, typed Pydantic

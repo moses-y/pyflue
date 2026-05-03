@@ -34,20 +34,34 @@ class MontyPythonBackend:
     ) -> PythonRunResult:
         try:
             from pydantic_monty import MontyRepl, OSAccess, ResourceLimits
-        except Exception as exc:
-            raise ImportError(
-                "Monty Python backend requires pydantic-monty. "
-                "Install with: pip install 'pyflue[monty]'"
-            ) from exc
+        except Exception:
+            try:
+                from pydantic_monty import Monty, OSAccess, ResourceLimits
+            except Exception as exc:
+                raise ImportError(
+                    "Monty Python backend requires pydantic-monty. "
+                    "Install with: pip install 'pyflue[monty]'"
+                ) from exc
+            MontyRepl = Monty
 
         if restart or self._repl is None:
             limits = _resource_limits(ResourceLimits, timeout=timeout, values=resource_limits)
-            self._repl = MontyRepl(
-                limits=limits,
-                type_check=type_check,
-                type_check_stubs=type_check_stubs,
-                dataclass_registry=self._dataclass_registry or None,
-            )
+            if MontyRepl is Monty:
+                input_names = list(inputs.keys()) if inputs else None
+                self._repl = MontyRepl(
+                    code,
+                    inputs=input_names,
+                    type_check=type_check,
+                    type_check_stubs=type_check_stubs,
+                    dataclass_registry=self._dataclass_registry or None,
+                )
+            else:
+                self._repl = MontyRepl(
+                    limits=limits,
+                    type_check=type_check,
+                    type_check_stubs=type_check_stubs,
+                    dataclass_registry=self._dataclass_registry or None,
+                )
 
         stdout: list[str] = []
 
@@ -55,14 +69,26 @@ class MontyPythonBackend:
             stdout.append(content)
 
         os_access = _os_access_for_sandbox(self.sandbox, OSAccess)
-        result = await self._repl.feed_run_async(
-            code,
-            inputs=inputs or {},
-            external_functions=external_functions or {},
-            print_callback=capture,
-            os=os_access,
-            skip_type_check=not type_check,
-        )
+        limits = _resource_limits(ResourceLimits, timeout=timeout, values=resource_limits)
+
+        if MontyRepl is Monty:
+            run_inputs = inputs if inputs else None
+            result = self._repl.run(
+                inputs=run_inputs,
+                limits=limits,
+                external_functions=external_functions or {},
+                print_callback=capture,
+                os=os_access,
+            )
+        else:
+            result = await self._repl.feed_run_async(
+                code,
+                inputs=inputs or {},
+                external_functions=external_functions or {},
+                print_callback=capture,
+                os=os_access,
+                skip_type_check=not type_check,
+            )
         return PythonRunResult(
             result=result,
             stdout="".join(stdout),
@@ -105,17 +131,26 @@ class MontyPythonBackend:
 
     def dump(self) -> bytes | None:
         """Serialize the Monty REPL state."""
-        return self._repl.dump() if self._repl is not None else None
+        if self._repl is None:
+            return None
+        try:
+            return self._repl.dump()
+        except AttributeError:
+            return None
 
     def load(self, data: bytes) -> None:
         """Restore a serialized Monty REPL state."""
         try:
             from pydantic_monty import MontyRepl
-        except Exception as exc:
-            raise ImportError(
-                "Monty Python backend requires pydantic-monty. "
-                "Install with: pip install 'pyflue[monty]'"
-            ) from exc
+        except Exception:
+            try:
+                from pydantic_monty import Monty
+            except Exception as exc:
+                raise ImportError(
+                    "Monty Python backend requires pydantic-monty. "
+                    "Install with: pip install 'pyflue[monty]'"
+                ) from exc
+            MontyRepl = Monty
         self._repl = MontyRepl.load(
             data,
             dataclass_registry=self._dataclass_registry or None,

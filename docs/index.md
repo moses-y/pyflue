@@ -1,5 +1,9 @@
 <section class="hero">
   <h1>PyFlue</h1>
+  <div class="admonition warning">
+    <p><strong>Warning:</strong> PyFlue is under active development. The API may change.
+    Pin your dependencies and review changelogs before updating.</p>
+  </div>
   <p>
     PyFlue is a Python-first agent harness framework for building autonomous
     agents with Markdown skills, persistent sessions, sandboxed filesystem
