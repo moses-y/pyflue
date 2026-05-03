@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+from pyflue.skills import (
+    load_project_instructions,
+    load_skills,
+    parse_skill,
+    render_skill_prompt,
+)
+
+
+def test_parse_skill_frontmatter(tmp_path):
+    path = tmp_path / "triage.md"
+    path.write_text(
+        """---
+name: triage
+description: Triage issues
+input_schema:
+  type: object
+  properties:
+    issue_number:
+      type: integer
+output_schema:
+  type: object
+  properties:
+    summary:
+      type: string
+---
+# Role
+Do triage.
+""",
+        encoding="utf-8",
+    )
+
+    skill = parse_skill(path)
+
+    assert skill.name == "triage"
+    assert skill.description == "Triage issues"
+    assert skill.input_schema["properties"]["issue_number"]["type"] == "integer"
+    assert "Do triage" in skill.instructions
+
+
+def test_load_skills_and_render_prompt(tmp_path):
+    skills_dir = tmp_path / ".agents" / "skills"
+    skills_dir.mkdir(parents=True)
+    (skills_dir / "one.md").write_text(
+        "---\nname: one\n---\nDo one.",
+        encoding="utf-8",
+    )
+
+    skills = load_skills(tmp_path)
+    prompt = render_skill_prompt(skills["one"], args={"x": 1})
+
+    assert list(skills) == ["one"]
+    assert '"x": 1' in prompt
+
+
+def test_load_project_instructions(tmp_path):
+    (tmp_path / "AGENTS.md").write_text("Base instructions", encoding="utf-8")
+    (tmp_path / "CLAUDE.md").write_text("Extra instructions", encoding="utf-8")
+
+    instructions = load_project_instructions(tmp_path)
+
+    assert "Base instructions" in instructions
+    assert "Extra instructions" in instructions

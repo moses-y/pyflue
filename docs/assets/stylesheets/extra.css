@@ -1,0 +1,124 @@
+:root {
+  --pyflue-bg: #05070a;
+  --pyflue-panel: #0d1117;
+  --pyflue-panel-2: #111827;
+  --pyflue-text: #f8fafc;
+  --pyflue-muted: #b6c2d1;
+  --pyflue-border: #263244;
+  --pyflue-cyan: #22d3ee;
+  --pyflue-green: #34d399;
+  --pyflue-amber: #fbbf24;
+}
+
+body,
+.md-main,
+.md-tabs,
+.md-header,
+.md-footer {
+  background: var(--pyflue-bg);
+  color: var(--pyflue-text);
+}
+
+.md-typeset {
+  color: var(--pyflue-text);
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  color: #ffffff;
+  letter-spacing: 0;
+}
+
+.md-typeset a {
+  color: var(--pyflue-cyan);
+}
+
+.md-typeset p,
+.md-typeset li,
+.md-typeset table {
+  color: var(--pyflue-text);
+}
+
+.md-typeset .admonition,
+.md-typeset details,
+.md-typeset table:not([class]) {
+  background: var(--pyflue-panel);
+  border-color: var(--pyflue-border);
+}
+
+.md-typeset code {
+  background: #111827;
+  color: #fef3c7;
+}
+
+.md-typeset pre > code {
+  background: #0b1020;
+  color: #e5e7eb;
+}
+
+.highlight .k,
+.highlight .kn,
+.highlight .kd {
+  color: #c084fc;
+}
+
+.highlight .s,
+.highlight .s1,
+.highlight .s2 {
+  color: var(--pyflue-green);
+}
+
+.highlight .nf,
+.highlight .na {
+  color: var(--pyflue-cyan);
+}
+
+.highlight .mi,
+.highlight .kc {
+  color: var(--pyflue-amber);
+}
+
+.md-nav__link,
+.md-nav__title {
+  color: var(--pyflue-muted);
+}
+
+.md-nav__link--active,
+.md-nav__link:hover {
+  color: #ffffff;
+}
+
+.hero {
+  padding: 4rem 0 2rem;
+}
+
+.hero h1 {
+  margin-bottom: 1rem;
+  font-size: 3rem;
+}
+
+.hero p {
+  max-width: 48rem;
+  color: var(--pyflue-muted);
+  font-size: 1.1rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.feature-card {
+  padding: 1rem;
+  background: var(--pyflue-panel);
+  border: 1px solid var(--pyflue-border);
+  border-radius: 8px;
+}
+
+.feature-card h3 {
+  margin-top: 0;
+}

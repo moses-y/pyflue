@@ -1,0 +1,68 @@
+site_name: PyFlue
+site_description: Python-first agent harness framework with Markdown skills, sessions, sandboxes, and pluggable backends.
+site_url: https://pyflue.dev
+repo_name: pyflue
+repo_url: https://github.com/SuperagenticAI/pyflue
+edit_uri: ""
+
+theme:
+  name: material
+  language: en
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
+  palette:
+    scheme: slate
+    primary: black
+    accent: cyan
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.tabs.link
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Overview: index.md
+  - Getting Started: getting-started.md
+  - Deployment: deployment.md
+  - Core Concepts:
+      - Agent Harness: concepts/harness.md
+      - Skills: concepts/skills.md
+      - Sessions: concepts/sessions.md
+      - Sandbox: concepts/sandbox.md
+      - Typed Outputs: concepts/typed-outputs.md
+  - API:
+      - Python API: api/python-api.md
+      - CLI: api/cli.md
+      - Configuration: api/configuration.md
+      - Harness Backends: api/harness-backends.md
+  - Guides:
+      - Build a Coding Agent: guides/coding-agent.md
+      - Create a Skill: guides/create-a-skill.md
+      - Use the Sandbox: guides/use-the-sandbox.md
+  - Reference:
+      - Feature Matrix: reference/feature-matrix.md

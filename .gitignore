@@ -1,0 +1,67 @@
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.hypothesis/
+.nox/
+.tox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging output
+dist/
+build/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Test and coverage output
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+junit.xml
+
+# Documentation builds
+site/
+
+# PyFlue local runtime state
+.pyflue/
+.agents/tmp/
+.agents/cache/
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# Generated deployment artifacts
+Dockerfile
+app.py
+railway.json
+render.yaml
+fly.toml
+.gitlab-ci.yml
+.github/workflows/pyflue-agent.yml
+
+# Tool and editor metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
