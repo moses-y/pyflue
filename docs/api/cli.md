@@ -22,6 +22,8 @@ Generated files:
 AGENTS.md
 pyflue.toml
 .agents/skills/triage.md
+.agents/roles/coder.md
+agents/default.py
 ```
 
 ## `pyflue run`
@@ -47,6 +49,12 @@ pyflue run \
   --allow-shell
 ```
 
+Print stream events:
+
+```bash
+pyflue run --stream --prompt "Review this project"
+```
+
 ## `pyflue skill new`
 
 Create a new Markdown skill:
@@ -54,6 +62,37 @@ Create a new Markdown skill:
 ```bash
 pyflue skill new review
 ```
+
+## `pyflue add`
+
+Print connector setup instructions for a coding agent.
+
+List available connector guides:
+
+```bash
+pyflue add
+```
+
+Show copyable agent commands:
+
+```bash
+pyflue add daytona
+```
+
+Print the full guide:
+
+```bash
+pyflue add daytona --print
+```
+
+Build a custom sandbox connector from provider docs:
+
+```bash
+pyflue add https://e2b.dev/docs --category sandbox --print | codex
+```
+
+The command does not install hidden dependencies. It prints a clear guide that
+your coding agent can apply to your project.
 
 ## `pyflue build`
 
@@ -77,23 +116,42 @@ Available targets:
 | `railway` | Implemented | `Dockerfile`, `app.py`, `railway.json` |
 | `render` | Implemented | `Dockerfile`, `app.py`, `render.yaml` |
 | `fly` | Implemented | `Dockerfile`, `app.py`, `fly.toml` |
+| `vercel` | Implemented | `Dockerfile`, `app.py`, `vercel.json` |
+| `netlify` | Implemented | `Dockerfile`, `app.py`, `netlify.toml` |
+| `cloudflare` | Partial | `wrangler.toml` |
 
 ## `pyflue dev`
 
-Current status: placeholder.
+Start the local development server with reload:
 
 ```bash
 pyflue dev --port 2024
 ```
 
-A hot-reload development server is planned.
+The server exposes:
+
+```text
+GET  /health
+GET  /agents
+POST /agents/{name}/{agent_id}
+POST /prompt/{agent_id}
+POST /prompt/{agent_id}/events
+```
 
 ## `pyflue deploy`
 
-Current status: placeholder.
+Generate deployment artifacts and a deployment manifest:
 
 ```bash
 pyflue deploy --dry-run
 ```
 
-Provider deployment is planned.
+Select a target:
+
+```bash
+pyflue deploy --target railway --dry-run
+```
+
+For supported provider CLIs, PyFlue runs the provider command when the CLI is
+installed and you are logged in. For other targets, it writes project files and
+`.pyflue/deploy.json` with the next step.

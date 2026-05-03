@@ -6,7 +6,7 @@ import asyncio
 from typing import Any
 
 from pyflue.harnesses.base import HarnessBackend
-from pyflue.sandbox import VirtualSandbox
+from pyflue.sandboxes.base import SandboxBackend
 from pyflue.types import HarnessResult, PyFlueConfig, Skill
 
 
@@ -24,6 +24,8 @@ class DeepAgentsBackend(HarnessBackend):
         skills: dict[str, Skill],
         sandbox: Any,
         session_id: str,
+        python_backend: Any | None = None,
+        stream: bool = False,
     ) -> HarnessResult:
         try:
             from deepagents import create_deep_agent
@@ -33,16 +35,12 @@ class DeepAgentsBackend(HarnessBackend):
                 "Install with: pip install pyflue"
             ) from exc
 
-        backend = (
-            _DeepAgentsSandboxBackend(sandbox)
-            if isinstance(sandbox, VirtualSandbox)
-            else None
-        )
+        backend = _DeepAgentsSandboxBackend(sandbox) if _is_pyflue_sandbox(sandbox) else None
         skill_sources = _skill_sources(config)
         memory = _memory_sources(config)
         agent = create_deep_agent(
             model=config.model,
-            tools=[],
+            tools=_tools(python_backend),
             system_prompt=system_prompt or None,
             backend=backend,
             skills=skill_sources or None,
@@ -65,33 +63,32 @@ class DeepAgentsBackend(HarnessBackend):
                 "skill_count": len(skills),
                 "skill_sources": skill_sources,
                 "memory": memory,
+                "stream": stream,
             },
         )
 
 
 class _DeepAgentsSandboxBackend:
-    """Adapter from PyFlue VirtualSandbox to DeepAgents' public backend protocol."""
+    """Adapter from PyFlue sandboxes to DeepAgents' public backend protocol."""
 
-    def __init__(self, sandbox: VirtualSandbox):
+    def __init__(self, sandbox: SandboxBackend):
         self.sandbox = sandbox
 
     @property
     def id(self) -> str:
-        return f"pyflue-virtual:{self.sandbox.root}"
+        return self.sandbox.id
 
     def ls(self, path: str) -> Any:
         from deepagents.backends.protocol import LsResult
 
         try:
-            target = self.sandbox.resolve(_from_backend_path(path))
             entries = []
-            paths = [target] if target.is_file() else sorted(target.iterdir())
-            for child in paths:
+            for child in self.sandbox.list_files(_from_backend_path(path)):
                 entries.append(
                     {
-                        "path": _to_backend_path(self.sandbox, child),
-                        "is_dir": child.is_dir(),
-                        "size": 0 if child.is_dir() else child.stat().st_size,
+                        "path": child.path,
+                        "is_dir": child.is_dir,
+                        "size": child.size,
                     }
                 )
             return LsResult(entries=entries)
@@ -112,7 +109,7 @@ class _DeepAgentsSandboxBackend:
 
         try:
             self.sandbox.write_file(_from_backend_path(file_path), content)
-            return WriteResult(path=_to_backend_path(self.sandbox, self.sandbox.resolve(_from_backend_path(file_path))))
+            return WriteResult(path=file_path)
         except Exception as exc:
             return WriteResult(error=str(exc))
 
@@ -140,7 +137,8 @@ class _DeepAgentsSandboxBackend:
                 file_path, _, rest = line.partition(":")
                 line_no, _, text = rest.partition(":")
                 if file_path and line_no.isdigit():
-                    matches.append({"path": "/" + file_path, "line": int(line_no), "text": text})
+                    normalized = file_path if file_path.startswith("/") else "/" + file_path
+                    matches.append({"path": normalized, "line": int(line_no), "text": text})
             return GrepResult(matches=matches)
         except Exception as exc:
             return GrepResult(error=str(exc))
@@ -153,12 +151,11 @@ class _DeepAgentsSandboxBackend:
             search = pattern if base == "." else f"{base.rstrip('/')}/{pattern}"
             matches = []
             for item in self.sandbox.glob(search).splitlines():
-                target = self.sandbox.resolve(item)
                 matches.append(
                     {
-                        "path": _to_backend_path(self.sandbox, target),
-                        "is_dir": target.is_dir(),
-                        "size": 0 if target.is_dir() else target.stat().st_size,
+                        "path": item if item.startswith("/") else "/" + item,
+                        "is_dir": False,
+                        "size": 0,
                     }
                 )
             return GlobResult(matches=matches)
@@ -196,13 +193,8 @@ class _DeepAgentsSandboxBackend:
         responses = []
         for path in paths:
             try:
-                target = self.sandbox.resolve(_from_backend_path(path))
-                if target.is_dir():
-                    responses.append(FileDownloadResponse(path=path, error="is_directory"))
-                else:
-                    responses.append(
-                        FileDownloadResponse(path=path, content=target.read_bytes())
-                    )
+                content = self.sandbox.read_file(_from_backend_path(path))
+                responses.append(FileDownloadResponse(path=path, content=content.encode()))
             except FileNotFoundError:
                 responses.append(FileDownloadResponse(path=path, error="file_not_found"))
             except PermissionError:
@@ -226,18 +218,38 @@ def _memory_sources(config: PyFlueConfig) -> list[str]:
 
 
 def _permissions(sandbox: Any) -> Any:
-    if not isinstance(sandbox, VirtualSandbox):
+    if not _is_pyflue_sandbox(sandbox):
         return None
     try:
         from deepagents import FilesystemPermission
     except Exception:
         return None
-    if sandbox.policy.allow_write:
+    if getattr(sandbox, "policy", None) and sandbox.policy.allow_write:
         return [FilesystemPermission(operations=["read", "write"], paths=["/**"])]
     return [
         FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
         FilesystemPermission(operations=["read"], paths=["/**"]),
     ]
+
+
+def _tools(python_backend: Any | None) -> list[Any]:
+    tools: list[Any] = []
+    if python_backend is None:
+        return tools
+
+    async def run_code(code: str) -> str:
+        """Run Python code in the configured PyFlue Python backend."""
+        result = await python_backend.run(code)
+        parts = []
+        if result.stdout:
+            parts.append("stdout:\n" + result.stdout)
+        parts.append("result:\n" + repr(result.result))
+        if result.stderr:
+            parts.append("stderr:\n" + result.stderr)
+        return "\n\n".join(parts)
+
+    tools.append(run_code)
+    return tools
 
 
 def _extract_text(raw: Any) -> str:
@@ -265,6 +277,16 @@ def _from_backend_path(path: str | None) -> str:
     return raw
 
 
-def _to_backend_path(sandbox: VirtualSandbox, path: Any) -> str:
-    rel = sandbox.relative(path)
-    return "/" if not rel else "/" + rel
+def _is_pyflue_sandbox(sandbox: Any) -> bool:
+    return all(
+        hasattr(sandbox, name)
+        for name in [
+            "list_files",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "grep",
+            "glob",
+            "shell",
+        ]
+    )

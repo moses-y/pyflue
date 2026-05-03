@@ -39,9 +39,24 @@ from the same context.
 
 | Method | Status | Purpose |
 | --- | --- | --- |
-| `prompt(text, result=None)` | Implemented | Run a direct prompt. |
-| `skill(name, args=None, result=None)` | Implemented | Run a Markdown skill. |
-| `subagent(prompt, result=None)` | Implemented | Run an isolated child session using the same sandbox. |
+| `prompt(text, result=None, role=None, model=None)` | Implemented | Run a direct prompt. |
+| `skill(name, args=None, result=None, role=None, model=None)` | Implemented | Run a Markdown skill. |
+| `task(prompt, result=None, role=None, model=None)` | Implemented | Run an isolated child task using the same sandbox. |
+| `subagent(prompt, result=None)` | Implemented | Alias-style helper for child sessions. |
 | `shell(command, timeout=120)` | Implemented | Run shell through sandbox policy. |
 | `read_file(path)` | Implemented | Read a sandbox file. |
 | `write_file(path, content)` | Implemented | Write a sandbox file when enabled. |
+
+## Tasks
+
+Tasks give you a child history while keeping the same sandbox:
+
+```python
+result = await session.task(
+    "Inspect only the failing tests",
+    role="coder",
+)
+```
+
+This is useful when the parent agent needs focused work without mixing every
+intermediate step into the parent conversation.

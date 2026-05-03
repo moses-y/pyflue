@@ -29,6 +29,24 @@ def test_virtual_sandbox_write_and_shell_policy(tmp_path):
     assert enabled.shell("cat x.txt")["stdout"] == "hello"
 
 
+def test_virtual_sandbox_rejects_compound_commands_by_default(tmp_path):
+    sandbox = VirtualSandbox(tmp_path, SandboxPolicy(allow_shell=True))
+
+    with pytest.raises(PermissionError, match="Compound shell syntax"):
+        sandbox.shell("echo hi && echo bye")
+
+
+def test_virtual_sandbox_allowed_commands_use_shell_parsing(tmp_path):
+    sandbox = VirtualSandbox(
+        tmp_path,
+        SandboxPolicy(allow_shell=True, allowed_commands=("python",)),
+    )
+
+    result = sandbox.shell("python -c 'print(42)'")
+
+    assert result["stdout"].strip() == "42"
+
+
 def test_virtual_sandbox_grep_glob_and_edit(tmp_path):
     sandbox = VirtualSandbox(tmp_path, SandboxPolicy(allow_write=True))
     sandbox.write_file("src/app.py", "print('needle')\n")

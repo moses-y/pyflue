@@ -36,6 +36,21 @@ PyFlue extracts the JSON and validates it with `pydantic.TypeAdapter`.
 
 ## Validation Errors
 
-If the model returns invalid data, Pydantic raises a validation error. The
-current implementation does not retry schema failures automatically. Automatic
-retry is planned.
+If the model returns invalid data, PyFlue asks the backend to repair the
+response. The default retry count is `3` and can be configured with
+`typed_retries` in `pyflue.toml`.
+
+```toml
+[agent]
+typed_retries = 3
+```
+
+You can override retries for one call:
+
+```python
+result = await session.prompt(
+    "Return a valid triage result",
+    result=TriageResult,
+    retries=1,
+)
+```

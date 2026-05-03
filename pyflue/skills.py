@@ -7,7 +7,7 @@ from typing import Any
 
 import frontmatter
 
-from pyflue.types import Skill
+from pyflue.types import Role, Skill
 
 
 def load_skills(root: str | Path = ".", skills_dir: str | Path | None = None) -> dict[str, Skill]:
@@ -37,6 +37,22 @@ def load_project_instructions(root: str | Path = ".") -> str:
     return "\n\n".join(part for part in parts if part)
 
 
+def load_roles(root: str | Path = ".", roles_dir: str | Path | None = None) -> dict[str, Role]:
+    """Load Markdown roles from `.agents/roles` by default."""
+    base = Path(root).expanduser().resolve()
+    directory = Path(roles_dir).expanduser() if roles_dir else base / ".agents" / "roles"
+    if not directory.is_absolute():
+        directory = base / directory
+    if not directory.exists():
+        return {}
+
+    roles: dict[str, Role] = {}
+    for path in sorted(directory.rglob("*.md")):
+        role = parse_role(path)
+        roles[role.name] = role
+    return roles
+
+
 def parse_skill(path: str | Path) -> Skill:
     """Parse one frontmatter Markdown skill file."""
     skill_path = Path(path).expanduser().resolve()
@@ -52,6 +68,22 @@ def parse_skill(path: str | Path) -> Skill:
         input_schema=_schema_or_none(metadata.get("input_schema")),
         output_schema=_schema_or_none(metadata.get("output_schema")),
         path=skill_path,
+    )
+
+
+def parse_role(path: str | Path) -> Role:
+    """Parse one frontmatter Markdown role file."""
+    role_path = Path(path).expanduser().resolve()
+    post = frontmatter.loads(role_path.read_text(encoding="utf-8"))
+    metadata: dict[str, Any] = dict(post.metadata or {})
+    name = str(metadata.get("name") or role_path.stem).strip()
+    if not name:
+        raise ValueError(f"Role name cannot be empty: {role_path}")
+    return Role(
+        name=name,
+        description=str(metadata.get("description", "") or "").strip(),
+        instructions=str(post.content or "").strip(),
+        path=role_path,
     )
 
 

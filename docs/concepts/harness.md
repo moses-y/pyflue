@@ -23,7 +23,7 @@ agent = await init(
 )
 ```
 
-The DeepAgents backend currently supports:
+The DeepAgents backend provides:
 
 - model selection
 - system prompt forwarding
@@ -50,9 +50,10 @@ The current built-in backend names are:
 | Backend | Status |
 | --- | --- |
 | `deepagents` | Implemented |
-| `openai_agents` | Planned |
-| `google_adk` | Planned |
-| `pydanticai` | Planned |
+| `openai_agents` | Extension point |
+| `google_adk` | Extension point |
+| `pydanticai` | Extension point |
 
-The planned backends are registered as extension points and raise a clear
-planned-backend error today.
+DeepAgents is the default harness for normal PyFlue projects. The other names
+are reserved extension points for teams that want to build a custom backend
+while keeping the same PyFlue project layout and session API.

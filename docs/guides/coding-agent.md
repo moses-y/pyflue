@@ -79,5 +79,5 @@ asyncio.run(main())
 
 - Shell execution requires `allow_shell=True`.
 - File writes require `allow_write=True`.
-- The current implementation does not commit changes automatically.
-- Add your own approval and commit logic for production workflows.
+- Use command grants for production workflows, for example `allowed_commands=["git", "pytest"]`.
+- Keep commits behind explicit approval or application logic.

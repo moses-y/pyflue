@@ -1,4 +1,4 @@
-"""Google ADK backend placeholder."""
+"""Deferred Google ADK backend."""
 
 from __future__ import annotations
 
@@ -22,6 +22,8 @@ class GoogleADKBackend(HarnessBackend):
         skills: dict[str, Skill],
         sandbox: Any,
         session_id: str,
+        python_backend: Any | None = None,
+        stream: bool = False,
     ) -> HarnessResult:
         raise NotImplementedError(
             "Google ADK backend is planned. Use harness='deepagents' for v0.1."

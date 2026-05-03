@@ -1,4 +1,4 @@
-"""Pydantic AI backend placeholder."""
+"""Deferred Pydantic AI backend."""
 
 from __future__ import annotations
 
@@ -22,6 +22,8 @@ class PydanticAIBackend(HarnessBackend):
         skills: dict[str, Skill],
         sandbox: Any,
         session_id: str,
+        python_backend: Any | None = None,
+        stream: bool = False,
     ) -> HarnessResult:
         raise NotImplementedError(
             "Pydantic AI backend is planned. Use harness='deepagents' for v0.1."

@@ -1,16 +1,16 @@
 # Harness Backends
 
 PyFlue uses a backend registry so the public session API can stay stable while
-the runtime implementation changes.
+teams can choose the harness runtime that fits their project.
 
 ## Built-In Backends
 
 | Backend | Status | Package line |
 | --- | --- | --- |
 | `deepagents` | Implemented | `deepagents>=0.5.6,<0.6.0` |
-| `openai_agents` | Planned | `openai-agents>=0.15.1,<0.16.0` |
-| `google_adk` | Planned | `google-adk>=1.32.0,<1.33.0` |
-| `pydanticai` | Planned | `pydantic-ai>=1.89.1,<1.90.0` |
+| `openai_agents` | Extension point | `openai-agents>=0.15.1,<0.16.0` |
+| `google_adk` | Extension point | `google-adk>=1.32.0,<1.33.0` |
+| `pydanticai` | Extension point | `pydantic-ai>=1.89.1,<1.90.0` |
 
 ## DeepAgents Backend
 
@@ -20,15 +20,16 @@ The DeepAgents backend is the default:
 agent = await init(harness="deepagents")
 ```
 
-It currently passes these values into the backend:
+The DeepAgents backend provides:
 
 - model
-- system prompt
-- skill source paths
-- memory source paths
-- sandbox backend adapter
-- filesystem permissions
-- session thread id
+- project instructions
+- Markdown skills
+- session continuity
+- sandbox file tools
+- shell execution through policy
+- task-friendly agent behavior
+- optional Python code tool when Monty is enabled
 
 ## Custom Backend Registration
 
@@ -53,8 +54,19 @@ Then use it:
 agent = await init(harness="custom")
 ```
 
-## Planned Backends
+## Optional Backends
 
-The OpenAI Agents SDK, Google ADK, and Pydantic AI backends are registered and
-dependency-pinned, but their runtime methods currently raise a clear planned
-backend error. This prevents silent fallback and keeps the implementation honest.
+OpenAI Agents SDK, Google ADK, and Pydantic AI are available as optional package
+extras for teams that want to build custom backends behind the PyFlue API.
+
+```bash
+uv add "pyflue[openai]"
+uv add "pyflue[google]"
+uv add "pyflue[pydanticai]"
+```
+
+```bash
+pip install "pyflue[openai]"
+pip install "pyflue[google]"
+pip install "pyflue[pydanticai]"
+```

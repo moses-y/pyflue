@@ -4,12 +4,21 @@
     PyFlue is a Python-first agent harness framework for building autonomous
     agents with Markdown skills, persistent sessions, sandboxed filesystem
     access, shell execution, typed Pydantic outputs, and pluggable harness
-    backends.
+    backends. It is inspired by the
+    <a href="https://flueframework.com">Flue framework</a> and adapts the
+    agent harness pattern for Python teams.
   </p>
 </section>
 
 ```bash
 uv add pyflue
+pyflue init my-agent
+cd my-agent
+pyflue run --prompt "Review this project"
+```
+
+```bash
+pip install pyflue
 pyflue init my-agent
 cd my-agent
 pyflue run --prompt "Review this project"
@@ -69,12 +78,13 @@ PyFlue gives you the core pieces needed for agentic workflows:
 - Pydantic validation for typed results
 - a DeepAgents runtime backend
 - a backend registry for future OpenAI Agents, Google ADK, Pydantic AI, and
-  custom harness implementations
-- deploy artifact generation for Docker/FastAPI, GitHub Actions, GitLab CI,
-  Railway, Render, and Fly.io
-
-The current package implements the DeepAgents path first. Other harness
-backends are extension points and are marked in the reference matrix.
+  custom harness backends
+- streaming events through Python, CLI, and SSE
+- route triggers for file-based webhook agents
+- secret grants for shell and prompt calls
+- command allowlists and compound-command protection
+- deployment files for Docker/FastAPI, GitHub Actions, GitLab CI, Railway,
+  Render, Fly.io, Vercel, Netlify, and Cloudflare starter projects
 
 ## Minimal Python Example
 

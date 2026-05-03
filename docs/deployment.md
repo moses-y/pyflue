@@ -17,9 +17,9 @@ any platform that accepts a Python container.
 | Railway | Implemented | `pyflue build --target railway` | Generates Docker/FastAPI artifacts and `railway.json`. |
 | Render | Implemented | `pyflue build --target render` | Generates Docker/FastAPI artifacts and `render.yaml`. |
 | Fly.io | Implemented | `pyflue build --target fly` | Generates Docker/FastAPI artifacts and `fly.toml`. |
-| Cloudflare Workers | Planned | Not available yet | Python Worker support is not equivalent to a full Python agent runtime today. A Cloudflare Containers guide is planned. |
-| Vercel | Planned | Not available yet | A Python serverless guide is planned. |
-| Netlify | Planned | Not available yet | A Python function guide is planned. |
+| Cloudflare | Partial | `pyflue build --target cloudflare` | Generates `wrangler.toml`. Full Python container guidance is still needed. |
+| Vercel | Implemented | `pyflue build --target vercel` | Generates Python app artifacts and `vercel.json`. |
+| Netlify | Implemented | `pyflue build --target netlify` | Generates Python app artifacts and `netlify.toml`. |
 
 ## Docker/FastAPI
 
@@ -36,15 +36,15 @@ Dockerfile
 app.py
 ```
 
-The generated `app.py` exposes a minimal `/prompt` endpoint:
+The generated `app.py` exposes the PyFlue server:
 
 ```bash
-curl http://localhost:8000/prompt \
+curl http://localhost:8000/prompt/default \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "Review this project", "session": "default"}'
+  -d '{"payload": {"prompt": "Review this project"}}'
 ```
 
-The generated Dockerfile installs the package and runs Uvicorn.
+File-based agents are exposed under `/agents/{name}/{agent_id}`.
 
 ## GitHub Actions
 
@@ -98,6 +98,13 @@ railway.json
 
 Deploy the project with Railway's GitHub integration or CLI.
 
+```bash
+pyflue deploy --target railway
+```
+
+When the Railway CLI is installed and authenticated, PyFlue runs
+`railway up`.
+
 ## Render
 
 Generate Render files:
@@ -134,10 +141,70 @@ fly.toml
 
 Review the generated app name and region before deploying with `fly deploy`.
 
-## Cloudflare, Vercel, and Netlify
+```bash
+pyflue deploy --target fly
+```
 
-These targets are planned, not implemented.
+When the Fly.io CLI is installed and authenticated, PyFlue runs `fly deploy`.
 
-For now, use the Docker/FastAPI target on a platform that supports Python
-containers. That path covers most production deployments while keeping the
-agent runtime fully Python-native.
+## Cloudflare
+
+Generate the Cloudflare starter file:
+
+```bash
+pyflue build --target cloudflare
+```
+
+Cloudflare support is currently partial. The generated file is a starting point
+for Cloudflare Python or container deployments. For production today, prefer the
+Docker/FastAPI target on a container-capable platform.
+
+## Vercel
+
+Generate Vercel files:
+
+```bash
+pyflue build --target vercel
+```
+
+This writes:
+
+```text
+Dockerfile
+app.py
+vercel.json
+```
+
+Review the generated route config before deploying.
+
+```bash
+pyflue deploy --target vercel
+```
+
+When the Vercel CLI is installed and authenticated, PyFlue runs
+`vercel deploy`.
+
+## Netlify
+
+Generate Netlify files:
+
+```bash
+pyflue build --target netlify
+```
+
+This writes:
+
+```text
+Dockerfile
+app.py
+netlify.toml
+```
+
+Review the generated function settings before deploying.
+
+```bash
+pyflue deploy --target netlify
+```
+
+When the Netlify CLI is installed and authenticated, PyFlue runs
+`netlify deploy`.

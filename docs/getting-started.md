@@ -25,6 +25,18 @@ Or install it with `pip`:
 pip install pyflue
 ```
 
+Optional extras:
+
+```bash
+uv add "pyflue[monty]"
+uv add "pyflue[sandboxes]"
+```
+
+```bash
+pip install "pyflue[monty]"
+pip install "pyflue[sandboxes]"
+```
+
 ## Create a Project
 
 ```bash
@@ -38,8 +50,12 @@ The command creates:
 AGENTS.md
 pyflue.toml
 .agents/
+  roles/
+    coder.md
   skills/
     triage.md
+agents/
+  default.py
 ```
 
 ## Run a Prompt
@@ -84,15 +100,38 @@ harness = "deepagents"
 sandbox = "virtual"
 skills_dir = ".agents/skills"
 state_dir = ".pyflue/sessions"
+allowed_commands = ["git", "pytest"]
+typed_retries = 3
 ```
 
-## Current CLI Coverage
+## Useful Commands
 
-| Command | Status |
+| Command | Purpose |
 | --- | --- |
-| `pyflue init` | Implemented |
-| `pyflue run` | Implemented |
-| `pyflue skill new` | Implemented |
-| `pyflue build` | Implemented for selected targets |
-| `pyflue dev` | Placeholder |
-| `pyflue deploy` | Placeholder |
+| `pyflue init` | Create a PyFlue project. |
+| `pyflue run` | Run one prompt. |
+| `pyflue run --stream` | Print normalized stream events. |
+| `pyflue skill new` | Create a Markdown skill. |
+| `pyflue dev` | Start the local webhook server and dashboard. |
+| `pyflue build` | Generate deployment files. |
+| `pyflue deploy` | Generate files and run a supported provider CLI when available. |
+
+## Run The Dev Server
+
+```bash
+pyflue dev --port 2024
+```
+
+Open the dashboard:
+
+```text
+http://127.0.0.1:2024/__pyflue
+```
+
+Call the default file-based agent:
+
+```bash
+curl http://127.0.0.1:2024/agents/default/demo \
+  -H "Content-Type: application/json" \
+  -d '{"payload": {"prompt": "Review this repository"}}'
+```

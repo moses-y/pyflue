@@ -44,16 +44,83 @@ agent = await init(
 For production use, prefer command allowlists:
 
 ```python
-from pyflue.sandbox import SandboxPolicy, VirtualSandbox
-
-sandbox = VirtualSandbox(
-    policy=SandboxPolicy(
-        allow_shell=True,
-        allowed_commands=("python", "pytest"),
-    )
+agent = await init(
+    allow_shell=True,
+    allowed_commands=["python", "pytest"],
 )
 ```
 
-The high-level `init` helper does not expose command allowlists yet. Create a
-custom `VirtualSandbox` through lower-level integration when you need that
-control.
+Compound shell syntax is blocked by default. This protects untrusted workflows
+from pipes, redirects, command substitution, and chained shell commands. Enable
+compound commands only for trusted workflows:
+
+```python
+agent = await init(
+    allow_shell=True,
+    allow_compound_commands=True,
+)
+```
+
+## Grant Secrets Per Call
+
+Secrets passed through `env` are not added to prompts and are not mounted into
+the sandbox by default.
+
+```python
+agent = await init(
+    env={"GITHUB_TOKEN": "..."},
+    allow_shell=True,
+    allowed_commands=["python"],
+)
+
+session = await agent.session("issue-123")
+await session.shell(
+    "python -c 'import os; print(os.getenv(\"GITHUB_TOKEN\"))'",
+    secrets=["GITHUB_TOKEN"],
+)
+```
+
+## Use a Remote Sandbox
+
+Install the provider extra:
+
+```bash
+uv add "pyflue[daytona]"
+```
+
+```bash
+pip install "pyflue[daytona]"
+```
+
+Then select the provider:
+
+```python
+agent = await init(
+    model="openai:gpt-4o",
+    sandbox="daytona",
+    env={"DAYTONA_API_KEY": "..."},
+    allow_write=True,
+    allow_shell=True,
+)
+```
+
+Supported provider names:
+
+| Provider | API key |
+| --- | --- |
+| `daytona` | `DAYTONA_API_KEY` |
+| `e2b` | `E2B_API_KEY` |
+| `modal` | Modal CLI or environment authentication |
+| `runloop` | `RUNLOOP_API_KEY` |
+
+Remote provider adapters keep the same session API:
+
+```python
+session = await agent.session("code")
+await session.shell("git clone https://github.com/org/repo workspace/repo")
+await session.write_file("workspace/repo/report.md", "# Report\n")
+content = await session.read_file("workspace/repo/report.md")
+```
+
+The provider sandbox is responsible for isolation. PyFlue is responsible for
+the common read, write, edit, grep, glob, and shell interface.

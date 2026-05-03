@@ -12,20 +12,42 @@ This page shows what users can rely on today and what is planned next.
 | Markdown skills | Implemented | `.agents/skills/**/*.md`. |
 | Project instructions | Implemented | `AGENTS.md` and `CLAUDE.md`. |
 | Sessions | Implemented | SQLite-backed history. |
-| Subagent helper | Implemented | Child PyFlue session with shared sandbox. |
-| Virtual sandbox | Implemented | Local path-bounded sandbox. |
-| Shell policy | Implemented | Requires `allow_shell=True`. |
+| Roles | Implemented | Markdown roles from `.agents/roles/**/*.md`. |
+| Task sessions | Implemented | `session.task()` creates isolated child history with shared sandbox. |
+| Virtual sandbox | Implemented | Persistent per-session workspace with path boundary checks and policy-gated shell execution. |
+| Shell policy | Implemented | Requires `allow_shell=True`; optional `allowed_commands` grants and compound-command blocking. |
+| Secret grants | Implemented | Secrets are only mounted into sandbox env for calls that request them. |
 | Write policy | Implemented | Requires `allow_write=True`. |
 | DeepAgents file transfer | Implemented | Upload and download methods. |
-| Typed outputs | Implemented | Pydantic `TypeAdapter`. |
+| Typed outputs | Implemented | Pydantic `TypeAdapter` with retry repair loop. |
+| Model override | Implemented | `session.prompt(..., model="...")` and `session.skill(..., model="...")`. |
+| File-based agent routing | Implemented | `agents/*.py` and `.agents/*.py` expose `/agents/{name}/{id}` routes. |
+| Route triggers | Implemented | Agent files can declare `triggers = {"webhook": True}`. |
 | CLI init | Implemented | Scaffolds project files. |
-| CLI run | Implemented | Runs a prompt. |
+| CLI run | Implemented | Runs a prompt with optional `--stream` event output. |
 | CLI skill new | Implemented | Scaffolds a skill. |
 | CLI build | Implemented | Generates Docker/FastAPI and selected CI/platform artifacts. |
-| CLI dev | Planned | Placeholder command. |
-| CLI deploy | Planned | Placeholder command. |
-| Remote sandboxes | Planned | Config direction only. |
-| Automatic typed-output retries | Planned | Validation exists, retry does not. |
+| CLI dev | Implemented | Starts the FastAPI app with Uvicorn reload. |
+| CLI deploy | Implemented | Generates target artifacts and can invoke known provider CLIs when installed. |
+| Remote sandboxes | Implemented | Daytona, E2B, Modal, and Runloop adapters. |
+| Monty Python backend | Implemented | Safe host-side Python execution via `pyflue[monty]`. |
+| Monty state dump/load | Implemented | Serialize and restore Monty REPL state. |
+| Monty dataclass registry | Implemented | `session.register_python_dataclass(...)`. |
+| Monty resource limits | Implemented | `resource_limits={...}` forwards to Monty. |
+| Streaming/events | Implemented | `session.stream(...)`, `pyflue run --stream`, and SSE endpoint. |
+
+## Sandbox Providers
+
+| Provider | Status | Notes |
+| --- | --- | --- |
+| Virtual | Implemented | Persistent per-session workspace with path boundary checks. |
+| Daytona | Implemented | Optional dependency: `pyflue[daytona]`. |
+| E2B | Implemented | Optional dependency: `pyflue[e2b]`. |
+| Modal | Implemented | Optional dependency: `pyflue[modal]`. |
+| Runloop | Implemented | Optional dependency: `pyflue[runloop]`. |
+
+Live provider smoke tests are available behind `PYFLUE_LIVE_SANDBOX_TESTS=1`
+and skip automatically unless the matching provider credentials are present.
 
 ## Deployment Targets
 
@@ -37,6 +59,6 @@ This page shows what users can rely on today and what is planned next.
 | Railway | Implemented | Uses the Docker/FastAPI app. |
 | Render | Implemented | Uses the Docker/FastAPI app. |
 | Fly.io | Implemented | Uses the Docker/FastAPI app. |
-| Cloudflare Workers | Planned | Python runtime support needs a separate design. |
-| Vercel | Planned | Python serverless guide planned. |
-| Netlify | Planned | Python function guide planned. |
+| Cloudflare | Partial | Generates `wrangler.toml`; full Python container guide is still needed. |
+| Vercel | Implemented | Generates `vercel.json` plus Python app artifacts. |
+| Netlify | Implemented | Generates `netlify.toml` plus Python app artifacts. |

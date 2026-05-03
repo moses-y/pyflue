@@ -1,4 +1,4 @@
-"""OpenAI Agents SDK backend placeholder."""
+"""Deferred OpenAI Agents SDK backend."""
 
 from __future__ import annotations
 
@@ -22,6 +22,8 @@ class OpenAIAgentsBackend(HarnessBackend):
         skills: dict[str, Skill],
         sandbox: Any,
         session_id: str,
+        python_backend: Any | None = None,
+        stream: bool = False,
     ) -> HarnessResult:
         raise NotImplementedError(
             "OpenAI Agents SDK backend is planned. Use harness='deepagents' for v0.1."

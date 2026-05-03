@@ -3,31 +3,45 @@
 [![CI](https://github.com/SuperagenticAI/pyflue/actions/workflows/ci.yml/badge.svg)](https://github.com/SuperagenticAI/pyflue/actions/workflows/ci.yml)
 [![Docs](https://github.com/SuperagenticAI/pyflue/actions/workflows/docs.yml/badge.svg)](https://github.com/SuperagenticAI/pyflue/actions/workflows/docs.yml)
 
-PyFlue is a Python-first agent harness framework with Markdown skills,
-stateful sessions, sandboxed filesystem/shell access, typed Pydantic outputs,
-and pluggable harness backends.
+PyFlue is the agent harness framework for Python. It gives you Markdown skills,
+stateful sessions, sandboxed filesystem and shell access, typed Pydantic
+outputs, streaming events, file-based webhook routes, and deployment-ready
+project structure.
 
-PyFlue is inspired by Flue's agent harness model and adapts the same broad
-developer experience for Python projects.
+PyFlue is inspired by the [Flue framework](https://flueframework.com) and
+adapts the agent harness model for Python teams.
 
-The default backend is DeepAgents. Other harnesses are represented behind the
-same PyFlue API so users can switch later without rewriting skills or sessions.
+Use it to build coding agents, issue triage agents, data analysis agents,
+support agents, and workflow agents that need controlled access to files,
+commands, tools, and structured outputs.
 
-## Quick Start
+## Install
 
-Add PyFlue to a project with `uv`:
+With `uv`:
 
 ```bash
 uv add pyflue
 ```
 
-Or install it with `pip`:
+With `pip`:
 
 ```bash
 pip install pyflue
 ```
 
-Then scaffold and run an agent:
+Optional extras:
+
+```bash
+uv add "pyflue[monty]"
+uv add "pyflue[sandboxes]"
+```
+
+```bash
+pip install "pyflue[monty]"
+pip install "pyflue[sandboxes]"
+```
+
+## Quick Start
 
 ```bash
 pyflue init my-agent
@@ -50,10 +64,10 @@ class FixResult(BaseModel):
 async def main():
     agent = await init(
         model="openai:gpt-4o",
-        harness="deepagents",
         sandbox="virtual",
         allow_write=True,
         allow_shell=True,
+        allowed_commands=["git"],
     )
     session = await agent.session("fix-123")
     result = await session.skill(
@@ -65,14 +79,24 @@ async def main():
         await session.shell("git status --short")
 ```
 
-## Harness Backends
+## What PyFlue Gives You
 
-| Backend | Status | Use case |
-| --- | --- | --- |
-| `deepagents` | Default | Coding/research agents with skills, files, shell, and subagents. |
-| `openai_agents` | Planned | OpenAI-native agent workflows. |
-| `google_adk` | Planned | Google/Gemini-oriented agent workflows. |
-| `pydanticai` | Planned | Type-safe service agents. |
+| Capability | What it means |
+| --- | --- |
+| Markdown skills | Put reusable workflows in `.agents/skills/*.md`. |
+| Project instructions | Use `AGENTS.md` for global behavior and context. |
+| Roles | Scope behavior with `.agents/roles/*.md`. |
+| Sessions | Resume agent state with stable session IDs. |
+| Tasks | Run focused child tasks with isolated history and shared sandbox. |
+| Sandbox | Read, write, edit, grep, glob, and shell behind explicit policies. |
+| Secret grants | Keep secrets out of prompts and grant them only per call. |
+| Typed outputs | Validate results with Pydantic and repair invalid JSON automatically. |
+| Streaming | Use `session.stream(...)`, `pyflue run --stream`, or SSE. |
+| Webhooks | Expose `agents/*.py` as `/agents/{name}/{agent_id}`. |
+| Python code backend | Use `pyflue[monty]` for safe host-side Python snippets. |
+| Remote sandboxes | Use Daytona, E2B, Modal, or Runloop with optional extras. |
+| Connector guides | Use `pyflue add` to print agent-readable setup guides for sandbox providers. |
+| Deployment | Generate Docker/FastAPI, CI, Railway, Render, Fly.io, Vercel, Netlify, and Cloudflare starter files. |
 
 ## Project Layout
 
@@ -80,27 +104,100 @@ async def main():
 AGENTS.md
 pyflue.toml
 .agents/
+  roles/
+    coder.md
   skills/
     triage.md
+agents/
+  default.py
 ```
 
-## Flue-Inspired Feature Mapping
+## File-Based Agent
 
-| Concept | PyFlue |
-| --- | --- |
-| `AGENTS.md` | Root project instructions loaded into the harness. |
-| Markdown skills | `.agents/skills/*.md` parsed with frontmatter. |
-| Sessions | SQLite-backed session history under `.pyflue/sessions`. |
-| Sandbox | `VirtualSandbox` by default; remote providers planned. |
-| Typed outputs | Pydantic v2 validation. |
-| CLI | `pyflue init`, `pyflue run`, `pyflue dev`, `pyflue build`. |
-| Deployment | Docker/FastAPI, GitHub Actions, GitLab CI, Railway, Render, and Fly.io artifact generation. |
+```python
+triggers = {"webhook": True}
 
-## Status
 
-The DeepAgents backend is the primary runtime. OpenAI Agents SDK, Google ADK,
-and Pydantic AI are exposed as planned extension points behind the same public
-PyFlue API.
+async def default(context):
+    agent = await context.init()
+    session = await agent.session(context.agent_id)
+    result = await session.prompt(context.payload["prompt"])
+    return {"text": result.text}
+```
+
+Run it locally:
+
+```bash
+pyflue dev --port 2024
+```
+
+Call it:
+
+```bash
+curl http://127.0.0.1:2024/agents/default/demo \
+  -H "Content-Type: application/json" \
+  -d '{"payload": {"prompt": "Review this repository"}}'
+```
+
+## Streaming
+
+```bash
+pyflue run --stream --prompt "Review this project"
+```
+
+```python
+async for event in session.stream("Review this project"):
+    print(event.type, event.data)
+```
+
+## Connector Guides
+
+List available guides:
+
+```bash
+pyflue add
+```
+
+Print a guide for a known sandbox provider:
+
+```bash
+pyflue add daytona --print
+```
+
+Start from any provider documentation URL:
+
+```bash
+pyflue add https://e2b.dev/docs --category sandbox --print | codex
+```
+
+## Security Model
+
+PyFlue starts with safe defaults:
+
+- writes are disabled until `allow_write=True`
+- shell execution is disabled until `allow_shell=True`
+- compound shell syntax is blocked by default
+- command allowlists are supported with `allowed_commands`
+- secrets are not injected into prompts
+- secrets are mounted into sandbox calls only when requested with `secrets=[...]`
+
+## Deployment
+
+Generate deployment files:
+
+```bash
+pyflue build --target docker
+pyflue build --target railway
+pyflue build --target fly
+pyflue build --target vercel
+pyflue build --target netlify
+```
+
+Deploy with a supported provider CLI:
+
+```bash
+pyflue deploy --target fly
+```
 
 ## Development
 

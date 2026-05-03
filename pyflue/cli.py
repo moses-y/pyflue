@@ -11,6 +11,12 @@ import typer
 from rich.console import Console
 
 from pyflue import init
+from pyflue.connectors import (
+    render_add_prompt,
+    render_connector_listing,
+    render_human_instructions,
+)
+from pyflue.deploy import DeployTarget, run_provider_deploy, write_deploy_artifacts
 
 app = typer.Typer(help="PyFlue agent harness CLI.")
 skill_app = typer.Typer(help="Manage Markdown skills.")
@@ -31,6 +37,9 @@ BuildTarget = Literal[
     "railway",
     "render",
     "fly",
+    "vercel",
+    "netlify",
+    "cloudflare",
 ]
 
 
@@ -41,6 +50,8 @@ def init_project(name: str = PROJECT_NAME_ARGUMENT, force: bool = False) -> None
     if root.exists() and any(root.iterdir()) and not force:
         raise typer.BadParameter(f"{root} is not empty. Use --force to overwrite.")
     (root / ".agents" / "skills").mkdir(parents=True, exist_ok=True)
+    (root / ".agents" / "roles").mkdir(parents=True, exist_ok=True)
+    (root / "agents").mkdir(parents=True, exist_ok=True)
     (root / "AGENTS.md").write_text(
         "You are a careful autonomous Python agent. Keep changes scoped.\n",
         encoding="utf-8",
@@ -50,7 +61,37 @@ def init_project(name: str = PROJECT_NAME_ARGUMENT, force: bool = False) -> None
         encoding="utf-8",
     )
     _write_skill(root / ".agents" / "skills" / "triage.md", "triage")
+    (root / ".agents" / "roles" / "coder.md").write_text(
+        "---\nname: coder\ndescription: Careful coding role\n---\n"
+        "You are a careful coding agent. Inspect before editing and verify your work.\n",
+        encoding="utf-8",
+    )
+    (root / "agents" / "default.py").write_text(
+        "triggers = {'webhook': True}\n\n"
+        "async def default(context):\n"
+        "    agent = await context.init()\n"
+        "    session = await agent.session(context.agent_id)\n"
+        "    result = await session.prompt(context.payload.get('prompt', 'Hello from PyFlue'))\n"
+        "    return {'text': result.text, 'metadata': result.metadata}\n",
+        encoding="utf-8",
+    )
     console.print(f"Created PyFlue project at {root}")
+
+
+@app.command("add")
+def add_connector(
+    name: str | None = typer.Argument(None),
+    category: str = typer.Option("sandbox", "--category", "-c"),
+    print_: bool = typer.Option(False, "--print", help="Print the connector guide."),
+) -> None:
+    """Print connector setup instructions for a coding agent."""
+    if not name:
+        console.print(render_connector_listing())
+        return
+    if print_:
+        console.print(render_add_prompt(name, category=category))
+        return
+    console.print(render_human_instructions(name, category=category))
 
 
 @app.command()
@@ -60,6 +101,7 @@ def run(
     config: Path = CONFIG_OPTION,
     allow_write: bool = ALLOW_WRITE_OPTION,
     allow_shell: bool = ALLOW_SHELL_OPTION,
+    stream: bool = typer.Option(False, "--stream", help="Print normalized stream events."),
 ) -> None:
     """Run one PyFlue prompt."""
 
@@ -69,7 +111,12 @@ def run(
             allow_write=allow_write,
             allow_shell=allow_shell,
         )
-        result = await (await agent.session(session)).prompt(prompt)
+        pyflue_session = await agent.session(session)
+        if stream:
+            async for event in pyflue_session.stream(prompt):
+                console.print_json(data={"type": event.type, **event.data})
+            return
+        result = await pyflue_session.prompt(prompt)
         console.print(result.text)
 
     asyncio.run(_run())
@@ -78,66 +125,51 @@ def run(
 @app.command()
 def dev(port: int = PORT_OPTION, config: Path = CONFIG_OPTION) -> None:
     """Start a development server with hot-reload support."""
-    console.print(
-        f"pyflue dev is planned for FastAPI hot reload. Config={config}, port={port}"
+    try:
+        import uvicorn
+    except Exception as exc:
+        raise typer.BadParameter(
+            "pyflue dev requires server dependencies. Install with: pip install 'pyflue[server]'"
+        ) from exc
+    console.print(f"Starting PyFlue dev server on http://127.0.0.1:{port}")
+    uvicorn.run(
+        "pyflue.server:create_app",
+        factory=True,
+        host="127.0.0.1",
+        port=port,
+        reload=True,
+        app_dir=str(config.parent.resolve()),
     )
 
 
 @app.command()
 def build(target: BuildTarget = "docker") -> None:
     """Generate deployment artifacts."""
-    if target == "docker":
-        _write_docker_artifacts()
-        console.print("Generated Dockerfile and app.py")
-    elif target == "github-actions":
-        _write_github_actions_workflow()
-        console.print("Generated .github/workflows/pyflue-agent.yml")
-    elif target == "gitlab-ci":
-        _write_gitlab_ci()
-        console.print("Generated .gitlab-ci.yml")
-    elif target == "railway":
-        _write_docker_artifacts()
-        Path("railway.json").write_text(
-            '{\n  "$schema": "https://railway.app/railway.schema.json",\n'
-            '  "build": {"builder": "DOCKERFILE"},\n'
-            '  "deploy": {"startCommand": "uvicorn app:app --host 0.0.0.0 --port $PORT"}\n'
-            "}\n",
-            encoding="utf-8",
-        )
-        console.print("Generated Dockerfile, app.py, and railway.json")
-    elif target == "render":
-        _write_docker_artifacts()
-        Path("render.yaml").write_text(
-            "services:\n"
-            "  - type: web\n"
-            "    name: pyflue-agent\n"
-            "    runtime: docker\n"
-            "    plan: starter\n"
-            "    envVars:\n"
-            "      - key: PORT\n"
-            "        value: 8000\n",
-            encoding="utf-8",
-        )
-        console.print("Generated Dockerfile, app.py, and render.yaml")
-    elif target == "fly":
-        _write_docker_artifacts()
-        Path("fly.toml").write_text(
-            'app = "pyflue-agent"\n'
-            'primary_region = "iad"\n\n'
-            "[http_service]\n"
-            "  internal_port = 8000\n"
-            "  force_https = true\n"
-            "  auto_stop_machines = true\n"
-            "  auto_start_machines = true\n",
-            encoding="utf-8",
-        )
-        console.print("Generated Dockerfile, app.py, and fly.toml")
+    paths = write_deploy_artifacts(target)
+    console.print("Generated " + ", ".join(str(path) for path in paths))
 
 
 @app.command()
-def deploy(dry_run: bool = False) -> None:
+def deploy(target: DeployTarget = "docker", dry_run: bool = False) -> None:
     """Deploy the PyFlue agent using the configured harness."""
-    console.print("Dry run: deployment config is valid." if dry_run else "pyflue deploy is planned.")
+    paths = write_deploy_artifacts(target)
+    manifest = Path(".pyflue") / "deploy.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(
+        json.dumps({"target": target, "artifacts": [str(path) for path in paths]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    if dry_run:
+        console.print(f"Dry run: generated deployment manifest for {target}.")
+    else:
+        deploy_result = run_provider_deploy(target)
+        if deploy_result.get("ran"):
+            console.print_json(data=deploy_result)
+        else:
+            console.print(
+                f"Generated deployment artifacts for {target}. "
+                f"{deploy_result['reason']}"
+            )
 
 
 @skill_app.command("new")

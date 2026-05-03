@@ -13,6 +13,8 @@ def test_cli_init_and_skill_new(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert (tmp_path / "demo" / "pyflue.toml").exists()
     assert (tmp_path / "demo" / ".agents" / "skills" / "triage.md").exists()
+    assert (tmp_path / "demo" / ".agents" / "roles" / "coder.md").exists()
+    assert (tmp_path / "demo" / "agents" / "default.py").exists()
 
     monkeypatch.chdir(tmp_path / "demo")
     result = runner.invoke(app, ["skill", "new", "review"])
@@ -48,3 +50,48 @@ def test_cli_build_targets(tmp_path, monkeypatch):
     result = runner.invoke(app, ["build", "--target", "fly"])
     assert result.exit_code == 0
     assert (tmp_path / "fly.toml").exists()
+
+    result = runner.invoke(app, ["build", "--target", "vercel"])
+    assert result.exit_code == 0
+    assert (tmp_path / "vercel.json").exists()
+
+    result = runner.invoke(app, ["build", "--target", "netlify"])
+    assert result.exit_code == 0
+    assert (tmp_path / "netlify.toml").exists()
+
+    result = runner.invoke(app, ["build", "--target", "cloudflare"])
+    assert result.exit_code == 0
+    assert (tmp_path / "wrangler.toml").exists()
+
+
+def test_cli_deploy_writes_manifest(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["deploy", "--dry-run"])
+
+    assert result.exit_code == 0
+    assert (tmp_path / ".pyflue" / "deploy.json").exists()
+
+
+def test_cli_add_lists_and_prints_connector_guides():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["add"])
+    assert result.exit_code == 0
+    assert "pyflue add daytona" in result.output
+    assert "pyflue add https://provider.example/docs" in result.output
+
+    result = runner.invoke(app, ["add", "daytona"])
+    assert result.exit_code == 0
+    assert "pyflue add daytona --category sandbox --print | codex" in result.output
+
+    result = runner.invoke(app, ["add", "daytona", "--print"])
+    assert result.exit_code == 0
+    assert "PyFlue already includes this provider" in result.output
+    assert 'sandbox = "daytona"' in result.output
+
+    result = runner.invoke(app, ["add", "https://e2b.dev/docs", "--print"])
+    assert result.exit_code == 0
+    assert "Build a PyFlue Sandbox Connector" in result.output
+    assert "https://e2b.dev/docs" in result.output

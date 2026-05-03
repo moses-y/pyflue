@@ -23,6 +23,8 @@ class HarnessBackend(ABC):
         skills: dict[str, Skill],
         sandbox: Any,
         session_id: str,
+        python_backend: Any | None = None,
+        stream: bool = False,
     ) -> HarnessResult:
         """Run one prompt turn."""
 

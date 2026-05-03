@@ -52,8 +52,10 @@ nav:
   - Core Concepts:
       - Agent Harness: concepts/harness.md
       - Skills: concepts/skills.md
+      - Roles And Routing: concepts/roles-and-routing.md
       - Sessions: concepts/sessions.md
       - Sandbox: concepts/sandbox.md
+      - Python Backends: concepts/python-backends.md
       - Typed Outputs: concepts/typed-outputs.md
   - API:
       - Python API: api/python-api.md
@@ -62,6 +64,7 @@ nav:
       - Harness Backends: api/harness-backends.md
   - Guides:
       - Build a Coding Agent: guides/coding-agent.md
+      - Example Agents: guides/example-agents.md
       - Create a Skill: guides/create-a-skill.md
       - Use the Sandbox: guides/use-the-sandbox.md
   - Reference:
