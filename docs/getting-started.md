@@ -95,7 +95,7 @@ Session history is stored under `.pyflue/sessions`.
 
 ```toml
 [agent]
-model = "openai:gpt-5.5all"
+model = "openai:gpt-5.5"
 harness = "deepagents"
 sandbox = "virtual"
 skills_dir = ".agents/skills"

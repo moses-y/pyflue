@@ -8,7 +8,7 @@ The Python API centers on `init`, `PyFlueAgent`, and `PyFlueSession`.
 from pyflue import init
 
 agent = await init(
-    model="openai:gpt-5.5all",
+    model="openai:gpt-5.5",
     harness="deepagents",
     sandbox="virtual",
     skills_dir=".agents/skills",
@@ -71,7 +71,7 @@ Override the model for a single call:
 ```python
 result = await session.prompt(
     "Use a larger model for this review",
-    model="openai:gpt-5.5all",
+    model="openai:gpt-5.5",
 )
 ```
 

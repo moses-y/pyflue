@@ -18,7 +18,7 @@ The default backend is DeepAgents:
 
 ```python
 agent = await init(
-    model="openai:gpt-5.5all",
+    model="openai:gpt-5.5",
     harness="deepagents",
 )
 ```

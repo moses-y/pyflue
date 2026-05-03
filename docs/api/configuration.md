@@ -4,7 +4,7 @@ PyFlue reads `pyflue.toml` by default.
 
 ```toml
 [agent]
-model = "openai:gpt-5.5all"
+model = "openai:gpt-5.5"
 harness = "deepagents"
 sandbox = "virtual"
 python_backend = "monty"
@@ -59,7 +59,7 @@ The `[sandbox]` table is passed to the selected sandbox provider:
 
 ```toml
 [agent]
-model = "openai:gpt-5.5all"
+model = "openai:gpt-5.5"
 sandbox = "daytona"
 
 [sandbox]
@@ -86,7 +86,7 @@ Values passed to `init` override config file values:
 ```python
 agent = await init(
     config_path="pyflue.toml",
-    model="openai:gpt-5.5all-mini",
+    model="openai:gpt-5.5-mini",
     harness="deepagents",
 )
 ```
