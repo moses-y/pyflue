@@ -1,9 +1,5 @@
 <section class="hero">
   <h1>PyFlue</h1>
-  <div class="admonition warning">
-    <p><strong>Warning:</strong> PyFlue is under active development. The API may change.
-    Pin your dependencies and review changelogs before updating.</p>
-  </div>
   <p>
     PyFlue is a Python-first agent harness framework for building autonomous
     agents with Markdown skills, persistent sessions, sandboxed filesystem
@@ -30,6 +26,11 @@ pyflue run --prompt "Review this project"
 
 ## Why PyFlue
 
+<div class="admonition warning">
+  <p><strong>Warning:</strong> PyFlue is under active development. The API may change.
+  Pin your dependencies and review changelogs before updating.</p>
+</div>
+
 PyFlue gives Python developers a framework-shaped agent runtime instead of a
 collection of low-level primitives. The default backend is DeepAgents, with a
 stable PyFlue API layered above it.
@@ -42,7 +43,7 @@ and Python-friendly deployment targets.
 The public model is simple:
 
 ```python
-agent = await init(model="openai:gpt-4o", harness="deepagents")
+agent = await init(model="openai:gpt-5.5all", harness="deepagents")
 session = await agent.session("issue-123")
 result = await session.skill("triage", args={"issue_number": 123}, result=FixResult)
 ```
@@ -104,7 +105,7 @@ class FixResult(BaseModel):
 
 async def main():
     agent = await init(
-        model="openai:gpt-4o",
+        model="openai:gpt-5.5all",
         harness="deepagents",
         sandbox="virtual",
         allow_write=True,

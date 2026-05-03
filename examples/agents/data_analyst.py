@@ -14,7 +14,7 @@ class AnalysisResult(BaseModel):
 
 
 async def analyze_csv(csv_text: str, question: str) -> AnalysisResult:
-    agent = await init(model="openai:gpt-4o", allow_write=True, allow_shell=True)
+    agent = await init(model="openai:gpt-5.5all", allow_write=True, allow_shell=True)
     session = await agent.session("data-analysis")
     await session.write_file("data/input.csv", csv_text)
     preview = await session.shell(

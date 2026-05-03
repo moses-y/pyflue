@@ -16,7 +16,7 @@ class TriageResult(BaseModel):
 
 async def main() -> None:
     agent = await init(
-        model="openai:gpt-4o",
+        model="openai:gpt-5.5all",
         harness="deepagents",
         sandbox="virtual",
         allow_write=True,

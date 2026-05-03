@@ -24,7 +24,7 @@ Enable it:
 
 ```python
 agent = await init(
-    model="openai:gpt-4o",
+    model="openai:gpt-5.5all",
     python_backend="monty",
 )
 session = await agent.session("analysis")

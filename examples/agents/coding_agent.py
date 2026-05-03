@@ -15,7 +15,7 @@ class CodingResult(BaseModel):
 
 async def run_coding_agent(repo: str, prompt: str) -> CodingResult:
     agent = await init(
-        model="openai:gpt-4o",
+        model="openai:gpt-5.5all",
         sandbox="virtual",
         allow_write=True,
         allow_shell=True,

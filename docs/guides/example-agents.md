@@ -33,7 +33,7 @@ class CodingResult(BaseModel):
 
 async def run_coding_agent(repo: str, prompt: str) -> CodingResult:
     agent = await init(
-        model="openai:gpt-4o",
+        model="openai:gpt-5.5all",
         sandbox="virtual",
         allow_write=True,
         allow_shell=True,
@@ -72,7 +72,7 @@ class TriageResult(BaseModel):
 
 
 async def triage_issue(issue_number: int, title: str, body: str) -> TriageResult:
-    agent = await init(model="openai:gpt-4o")
+    agent = await init(model="openai:gpt-5.5all")
     session = await agent.session(f"issue-{issue_number}")
     return await session.skill(
         "triage_issue",
@@ -105,7 +105,7 @@ class AnalysisResult(BaseModel):
 
 async def analyze_csv(csv_text: str, question: str) -> AnalysisResult:
     agent = await init(
-        model="openai:gpt-4o",
+        model="openai:gpt-5.5all",
         python_backend="monty",
         allow_write=True,
     )
@@ -144,7 +144,7 @@ class SupportAnswer(BaseModel):
 
 
 async def answer_support_question(question: str, articles: dict[str, str]) -> SupportAnswer:
-    agent = await init(model="openai:gpt-4o", allow_write=True, allow_shell=True)
+    agent = await init(model="openai:gpt-5.5all", allow_write=True, allow_shell=True)
     session = await agent.session("support")
 
     for name, content in articles.items():

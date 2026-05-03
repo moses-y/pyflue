@@ -158,7 +158,7 @@ from pyflue import init
 
 
 agent = await init(
-    model="openai:gpt-4o",
+    model="openai:gpt-5.5all",
     sandbox="{connector.name}",
     env={{"{env_key if connector.name != "modal" else "MODAL_TOKEN_ID"}": "..."}},
     allow_write=True,
@@ -246,7 +246,7 @@ from connectors.{slug} import { _class_name(slug) }
 from pyflue import init
 
 
-agent = await init(model="openai:gpt-4o", allow_write=True, allow_shell=True)
+agent = await init(model="openai:gpt-5.5all", allow_write=True, allow_shell=True)
 session = await agent.session("code")
 ```
 

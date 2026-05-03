@@ -57,7 +57,7 @@ Use a remote provider by selecting the sandbox:
 
 ```python
 agent = await init(
-    model="openai:gpt-4o",
+    model="openai:gpt-5.5all",
     sandbox="daytona",
     env={"DAYTONA_API_KEY": "..."},
     allow_write=True,

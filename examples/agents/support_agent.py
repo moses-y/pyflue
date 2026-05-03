@@ -17,7 +17,7 @@ async def answer_support_question(
     question: str,
     articles: dict[str, str],
 ) -> SupportAnswer:
-    agent = await init(model="openai:gpt-4o", allow_write=True, allow_shell=True)
+    agent = await init(model="openai:gpt-5.5all", allow_write=True, allow_shell=True)
     session = await agent.session("support")
 
     for name, content in articles.items():

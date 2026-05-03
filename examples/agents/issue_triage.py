@@ -34,7 +34,7 @@ async def ensure_triage_skill() -> Path:
 
 async def triage_issue(issue_number: int, title: str, body: str) -> TriageResult:
     skills_dir = await ensure_triage_skill()
-    agent = await init(model="openai:gpt-4o", skills_dir=skills_dir)
+    agent = await init(model="openai:gpt-5.5all", skills_dir=skills_dir)
     session = await agent.session(f"issue-{issue_number}")
     return await session.skill(
         "triage_issue",
