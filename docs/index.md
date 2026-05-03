@@ -9,7 +9,7 @@
 </section>
 
 ```bash
-pip install -e ".[dev]"
+uv add pyflue
 pyflue init my-agent
 cd my-agent
 pyflue run --prompt "Review this project"

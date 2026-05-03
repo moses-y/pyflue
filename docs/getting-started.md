@@ -11,18 +11,18 @@ that are generated.
 
 PyFlue depends on DeepAgents `0.5.6`, which requires Python 3.11 or newer.
 
-## Install for Development
+## Install
 
-From the repository root:
+Add PyFlue to a project with `uv`:
 
 ```bash
-uv sync --extra dev
+uv add pyflue
 ```
 
-Or install with pip:
+Or install it with `pip`:
 
 ```bash
-pip install -e ".[dev]"
+pip install pyflue
 ```
 
 ## Create a Project
@@ -93,6 +93,6 @@ state_dir = ".pyflue/sessions"
 | `pyflue init` | Implemented |
 | `pyflue run` | Implemented |
 | `pyflue skill new` | Implemented |
-| `pyflue build` | Partial starter output |
+| `pyflue build` | Implemented for selected targets |
 | `pyflue dev` | Placeholder |
 | `pyflue deploy` | Placeholder |

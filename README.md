@@ -15,8 +15,21 @@ same PyFlue API so users can switch later without rewriting skills or sessions.
 
 ## Quick Start
 
+Add PyFlue to a project with `uv`:
+
 ```bash
-pip install -e ".[dev]"
+uv add pyflue
+```
+
+Or install it with `pip`:
+
+```bash
+pip install pyflue
+```
+
+Then scaffold and run an agent:
+
+```bash
 pyflue init my-agent
 cd my-agent
 pyflue run --prompt "Review this project"
